@@ -30,6 +30,7 @@ E2E_SETUP_KIND=${E2E_SETUP_KIND:-}
 E2E_SETUP_KUBECTL=${E2E_SETUP_KUBECTL:-}
 KIND_VERSION=v0.9.0
 SUDO=${SUDO:-}
+MINIKUBE_PROFILE=${MINIKUBE_PROFILE:-ksm-e2e}
 
 OS=$(uname -s | awk '{print tolower($0)}')
 OS=${OS:-linux}
@@ -67,9 +68,15 @@ touch "${HOME}"/.kube/config
 
 export KUBECONFIG=$HOME/.kube/config
 
-kind create cluster --image=kindest/node:${KUBERNETES_VERSION}
+if [[ "$MINIKUBE_DRIVER" != "none" ]]; then 
+  export MINIKUBE_PROFILE_ARG=" --profile ${MINIKUBE_PROFILE}"
+else
+  export MINIKUBE_PROFILE_ARG=''
+fi
 
-kind export kubeconfig
+${SUDO} minikube start --vm-driver="${MINIKUBE_DRIVER}"${MINIKUBE_PROFILE_ARG} --kubernetes-version=${KUBERNETES_VERSION} --logtostderr
+
+minikube update-context${MINIKUBE_PROFILE_ARG}
 
 set +e
 
@@ -95,6 +102,12 @@ fi
 set -e
 
 kubectl version
+
+# Build binary
+make build
+
+# ensure that we build docker image in minikube
+[[ "$MINIKUBE_DRIVER" != "none" ]] && eval "$(minikube docker-env${MINIKUBE_PROFILE_ARG})" && export DOCKER_CLI='docker'
 
 # query kube-state-metrics image tag
 make container
