@@ -54,7 +54,7 @@ doccheck: generate
 	@echo OK
 
 build-local:
-	GOOS=$(shell uname -s | tr A-Z a-z) GOARCH=$(ARCH) CGO_ENABLED=0 go build -ldflags "-s -w -X ${PKG}/version.Release=${TAG} -X ${PKG}/version.Commit=${GIT_COMMIT} -X ${PKG}/version.BuildDate=${BUILD_DATE}" -o kube-state-metrics
+	GOOS=$(shell uname -s | tr A-Z a-z) GOARCH=$(ARCH) CGO_ENABLED=0 go build -ldflags "-s -w -X ${PKG}/version.Release=${TAG} -X ${PKG}/version.Commit=${Commit} -X ${PKG}/version.BuildDate=${BuildDate}" -o kube-state-metrics
 
 build: kube-state-metrics
 
