@@ -23,10 +23,11 @@ case $(uname -m) in
 	*)		ARCH="$(uname -m)";;
 esac
 
-KUBERNETES_VERSION=v1.19.1
+KUBERNETES_VERSION=v1.17.3
 KUBE_STATE_METRICS_LOG_DIR=./log
 KUBE_STATE_METRICS_IMAGE_NAME="quay.io/coreos/kube-state-metrics-${ARCH}"
-E2E_SETUP_KIND=${E2E_SETUP_KIND:-}
+PROMETHEUS_VERSION=2.12.0
+E2E_SETUP_MINIKUBE=${E2E_SETUP_MINIKUBE:-}
 E2E_SETUP_KUBECTL=${E2E_SETUP_KUBECTL:-}
 KIND_VERSION=v0.9.0
 SUDO=${SUDO:-}
@@ -45,10 +46,10 @@ function finish() {
     kubectl delete -f tests/manifests/ || true
 }
 
-function setup_kind() {
-    curl -sLo kind "https://kind.sigs.k8s.io/dl/${KIND_VERSION}/kind-${OS}-${ARCH}" \
-        && chmod +x kind \
-        && ${SUDO} mv kind /usr/local/bin/
+function setup_minikube() {
+    curl -sLo minikube https://storage.googleapis.com/minikube/releases/${MINIKUBE_VERSION}/minikube-"${OS}"-"${ARCH}" \
+        && chmod +x minikube \
+        && ${SUDO} mv minikube /usr/local/bin/
 }
 
 function setup_kubectl() {
@@ -102,9 +103,6 @@ fi
 set -e
 
 kubectl version
-
-# Build binary
-make build
 
 # ensure that we build docker image in minikube
 [[ "$MINIKUBE_DRIVER" != "none" ]] && eval "$(minikube docker-env${MINIKUBE_PROFILE_ARG})" && export DOCKER_CLI='docker'
